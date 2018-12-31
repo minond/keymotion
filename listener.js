@@ -22,7 +22,7 @@ const KEY_U = 85
  * Track next key combo index and when it triggered. Incremented on successful
  * match, set to zero on failed match and when combo is completed.
  */
-let nextKeyCombo = 0
+let nextComboIndex = 0
 let lastPressTime
 
 /**
@@ -74,13 +74,13 @@ const scroll = (ev, offsetX, offsetY) => {
 }
 
 /**
- * Create a KeyComboArray using a key pressed event's data.
+ * Create a Combo using a key pressed event's data.
  *
- * @type KeyComboArray [MODIFIER_KEY{0, 3}, Number]
+ * @type Combo [MODIFIER_KEY{0, 3}, Number]
  * @param {Event} ev
- * @return {KeyComboArray}
+ * @return {Combo}
  */
-const getKeyCombo = (ev) =>
+const combo = (ev) =>
   [
     ev.altKey && MODIFIER_ALT,
     ev.ctrlKey && MODIFIER_CTRL,
@@ -92,28 +92,27 @@ const getKeyCombo = (ev) =>
 /**
  * Returns true when a given combination of keys are pressed.
  *
- * @param {Event} ev
- * @param {Number...} keys
+ * @param {Combo} pressedCombo
+ * @param {[]Combo} wantedCombos
+ * @return {bool}
  */
-const pressed = (ev, ...wantedKeyCombos) => {
+const pressed = (pressedCombo, ...wantedCombos) => {
   if (Date.now() - lastPressTime > KEYPRESS_TIME_WINDOW) {
-    nextKeyCombo = 0
+    nextComboIndex = 0
   }
 
-  lastPressTime = Date.now()
-
-  let pressedKeyCombo = getKeyCombo(ev)
-  let currentKeyCombo = wantedKeyCombos[nextKeyCombo]
-
-  if (!setEq(currentKeyCombo, pressedKeyCombo)) {
+  let currentCombo = wantedCombos[nextComboIndex]
+  if (!setEq(currentCombo, pressedCombo)) {
     return false
   }
 
-  // Move on to the next combo. Return true only when we have reached the end
-  // of a key combo.
-  nextKeyCombo++
-  if (nextKeyCombo === wantedKeyCombos.length) {
-    nextKeyCombo = 0
+  // Make sure we on to the next combo and return true only when we have
+  // reached the end of a key combo.
+  lastPressTime = Date.now()
+  nextComboIndex += 1
+
+  if (nextComboIndex === wantedCombos.length) {
+    nextComboIndex = 0
     return true
   }
 
@@ -126,16 +125,25 @@ document.addEventListener('keydown', (ev) => {
     return
   }
 
+  let pressedCombo = combo(ev)
   switch (true) {
-    case pressed(ev, [KEY_H]): return scroll(ev, -STEP_LEN, 0)
-    case pressed(ev, [KEY_J]): return scroll(ev, 0, STEP_LEN)
-    case pressed(ev, [KEY_K]): return scroll(ev, 0, -STEP_LEN)
-    case pressed(ev, [KEY_L]): return scroll(ev, STEP_LEN, 0)
+    case pressed(pressedCombo, [KEY_H]):
+      return scroll(ev, -STEP_LEN, 0)
+    case pressed(pressedCombo, [KEY_J]):
+      return scroll(ev, 0, STEP_LEN)
+    case pressed(pressedCombo, [KEY_K]):
+      return scroll(ev, 0, -STEP_LEN)
+    case pressed(pressedCombo, [KEY_L]):
+      return scroll(ev, STEP_LEN, 0)
 
-    case pressed(ev, [KEY_G], [KEY_G]): return scroll(ev, 0, -Number.MAX_SAFE_INTEGER)
-    case pressed(ev, [MODIFIER_SHIFT, KEY_G]): return scroll(ev, 0, Number.MAX_SAFE_INTEGER)
+    case pressed(pressedCombo, [KEY_G], [KEY_G]):
+      return scroll(ev, 0, -Number.MAX_SAFE_INTEGER)
+    case pressed(pressedCombo, [MODIFIER_SHIFT, KEY_G]):
+      return scroll(ev, 0, Number.MAX_SAFE_INTEGER)
 
-    case pressed(ev, [MODIFIER_CTRL, KEY_U]): return scroll(ev, 0, -JUMP_LEN)
-    case pressed(ev, [MODIFIER_CTRL, KEY_D]): return scroll(ev, 0, JUMP_LEN)
+    case pressed(pressedCombo, [MODIFIER_CTRL, KEY_U]):
+      return scroll(ev, 0, -JUMP_LEN)
+    case pressed(pressedCombo, [MODIFIER_CTRL, KEY_D]):
+      return scroll(ev, 0, JUMP_LEN)
   }
 })
