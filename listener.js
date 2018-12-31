@@ -131,5 +131,11 @@ document.addEventListener('keydown', (ev) => {
     case pressed(ev, [KEY_J]): return scroll(ev, 0, STEP_LEN)
     case pressed(ev, [KEY_K]): return scroll(ev, 0, -STEP_LEN)
     case pressed(ev, [KEY_L]): return scroll(ev, STEP_LEN, 0)
+
+    case pressed(ev, [KEY_G], [KEY_G]): return scroll(ev, 0, -Number.MAX_SAFE_INTEGER)
+    case pressed(ev, [MODIFIER_SHIFT, KEY_G]): return scroll(ev, 0, Number.MAX_SAFE_INTEGER)
+
+    case pressed(ev, [MODIFIER_CTRL, KEY_U]): return scroll(ev, 0, -JUMP_LEN)
+    case pressed(ev, [MODIFIER_CTRL, KEY_D]): return scroll(ev, 0, JUMP_LEN)
   }
 })
