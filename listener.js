@@ -19,6 +19,14 @@ const KEY_L = 76
 const KEY_U = 85
 
 /**
+ * @param {[]*} xs
+ * @param {*} x
+ * @return {bool}
+ */
+const contains = (xs, x) =>
+  xs.indexOf(x) !== -1
+
+/**
  * Track next key combo index and when it triggered. Incremented on successful
  * match, set to zero on failed match and when combo is completed.
  */
@@ -32,9 +40,8 @@ let lastPressTime
  * @return {bool}
  */
 const isInput = (el) =>
-  el.type === 'text' ||
-    el.type === 'textarea' ||
-    el.contentEditable === 'true'
+  el.contentEditable === 'true' ||
+    contains(['INPUT', 'TEXTAREA', 'SELECT'], el.nodeName)
 
 /**
  * Compares two unordered sets for equality.
@@ -49,7 +56,7 @@ const setEq = (a, b) => {
   }
 
   for (let i = 0, len = a.length; i < len; i++) {
-    if (a.indexOf(b[i]) === -1) {
+    if (!contains(a, b[i])) {
       return false
     }
   }

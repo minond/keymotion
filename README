@@ -1,2 +1,13 @@
 Keymotion is a browser plugin that lets you move around a page with your
 keyboard.
+
+Shortcuts:
+
+  h           small scroll left
+  j           small scroll down
+  k           small scroll up
+  l           small scroll right
+  gg          scroll to top
+  shift - g   scroll to bottom
+  ctrl - u    big scroll up
+  ctrl - d    big scroll down
