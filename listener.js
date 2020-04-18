@@ -18,6 +18,8 @@ const KEY_K = 75
 const KEY_L = 76
 const KEY_U = 85
 
+const KEY_SINGLE_QUOTE = 222
+
 /**
  * @param {[]*} xs
  * @param {*} x
@@ -31,7 +33,20 @@ const contains = (xs, x) =>
  * match, set to zero on failed match and when combo is completed.
  */
 let nextComboIndex = 0
-let lastPressTime
+let lastPressTime = Date.now()
+
+/**
+ * Used for mappings that send you back where you previously were.
+ */
+let lastOffset = { x: 0, y: 0 }
+
+const save = (lastPressTime, x = pageXOffset, y = pageYOffset) => {
+  if (Date.now() - lastPressTime < 500) {
+    return
+  }
+
+  lastOffset = {x, y}
+}
 
 /**
  * Returns true when a given node is "editable".
@@ -132,25 +147,54 @@ document.addEventListener('keydown', (ev) => {
     return
   }
 
+  // Boys and girls, this is why globals are bad.
+  let _lastPressTime = lastPressTime
   let pressedCombo = combo(ev)
   switch (true) {
     case pressed(pressedCombo, [KEY_H]):
-      return scroll(ev, -STEP_LEN, 0)
+      save()
+      scroll(ev, -STEP_LEN, 0)
+      break
+
     case pressed(pressedCombo, [KEY_J]):
-      return scroll(ev, 0, STEP_LEN)
+      save(_lastPressTime)
+      scroll(ev, 0, STEP_LEN)
+      break
+
     case pressed(pressedCombo, [KEY_K]):
-      return scroll(ev, 0, -STEP_LEN)
+      save(_lastPressTime)
+      scroll(ev, 0, -STEP_LEN)
+      break
+
     case pressed(pressedCombo, [KEY_L]):
-      return scroll(ev, STEP_LEN, 0)
+      save(_lastPressTime)
+      scroll(ev, STEP_LEN, 0)
+      break
 
     case pressed(pressedCombo, [KEY_G], [KEY_G]):
-      return scroll(ev, 0, -Number.MAX_SAFE_INTEGER)
+      save(_lastPressTime)
+      scroll(ev, 0, -Number.MAX_SAFE_INTEGER)
+      break
+
     case pressed(pressedCombo, [MODIFIER_SHIFT, KEY_G]):
-      return scroll(ev, 0, Number.MAX_SAFE_INTEGER)
+      save(_lastPressTime)
+      scroll(ev, 0, Number.MAX_SAFE_INTEGER)
+      break
 
     case pressed(pressedCombo, [MODIFIER_CTRL, KEY_U]):
-      return scroll(ev, 0, -JUMP_LEN)
+      save(_lastPressTime)
+      scroll(ev, 0, -JUMP_LEN)
+      break
+
     case pressed(pressedCombo, [MODIFIER_CTRL, KEY_D]):
-      return scroll(ev, 0, JUMP_LEN)
+      save(_lastPressTime)
+      scroll(ev, 0, JUMP_LEN)
+      break
+
+    case pressed(pressedCombo, [KEY_SINGLE_QUOTE], [KEY_SINGLE_QUOTE]):
+      lastPressTime = Date.now()
+      save(_lastPressTime)
+      scrollTo(lastOffset.x, lastOffset.y)
+      break
   }
 })
